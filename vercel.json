@@ -1,0 +1,9 @@
+{
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/((?!api|_next|_static|_vercel|manifest\\.json|app\\.webmanifest|sw\\.js|pwa-.*\\.png|maskable-icon.*\\.png|apple-touch-icon.*\\.png|.*\\..*).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
