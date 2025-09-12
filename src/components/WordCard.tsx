@@ -76,27 +76,30 @@ export const WordCard: React.FC<WordCardProps> = ({ word, category }) => {
   // 해시태그를 한글로 변환하는 함수
   const getHashtagDisplayName = (hashtag: string): string => {
     const hashtagMap: { [key: string]: string } = {
-      'toeic': '토익',
-      'toefl': '토플',
-      'suneung': '수능',
-      'gongmuwon': '공무원',
-      'gtelp': '지텔프'
+      'TOEIC': '토익',
+      'TOEFL': '토플',
+      '수능': '수능',
+      '공무원': '공무원',
+      'GTELP': '지텔프',
+      'THAI': '태국어',
+      'KOREAN': '한국어',
+      'THAI-CONVERSATION': '태국회화'
     };
-    return hashtagMap[hashtag.toLowerCase()] || hashtag;
+    return hashtagMap[hashtag] || hashtag;
   };
 
   return (
     <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
       <div className="text-center">
         {/* 해시태그 표시 */}
-        {(word as any).hashtags && (word as any).hashtags.length > 0 && (
-          <div className="flex flex-wrap justify-center gap-1 mb-2">
-            {(word as any).hashtags.map((hashtag: string, index: number) => (
+        {word.categories && word.categories.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-2 mb-4">
+            {word.categories.map((category: string, index: number) => (
               <span 
                 key={index}
-                className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full"
+                className="px-3 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 text-sm font-semibold rounded-full border border-blue-200 hover:from-blue-200 hover:to-indigo-200 transition-all duration-200"
               >
-                #{getHashtagDisplayName(hashtag)}
+                #{getHashtagDisplayName(category)}
               </span>
             ))}
           </div>
