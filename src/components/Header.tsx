@@ -13,9 +13,15 @@ const LANGUAGES = [
 ];
 
 const HANJA_CATEGORIES = [
-  { key: 'hanja-basic', label: '기초한자', available: true },
-  { key: 'hanja-middle', label: '중급한자', available: false },
-  { key: 'hanja-advanced', label: '고급한자', available: false },
+  { key: 'hanja-8', label: '8급', available: true },
+  { key: 'hanja-7', label: '7급', available: true },
+  { key: 'hanja-6', label: '6급', available: true },
+  { key: 'hanja-5', label: '5급', available: true },
+  { key: 'hanja-4', label: '4급', available: true },
+  { key: 'hanja-3', label: '3급', available: true },
+  { key: 'hanja-2', label: '2급', available: true },
+  { key: 'hanja-1', label: '1급', available: true },
+  { key: 'hanja-special', label: '특급', available: true },
 ];
 
 export const Header: React.FC<HeaderProps> = ({ category, setCategory }) => {

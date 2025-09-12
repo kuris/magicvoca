@@ -21,13 +21,27 @@ export function useWords(category?: string) {
         
         console.log('Fetching words with category filter:', category);
 
-        // 한자 카테고리는 아직 미구현이므로 빈 결과 반환
+        // 한자 카테고리 처리 (기존 DB 건드리지 않고 별도 테이블 사용 예정)
         if (category && category.startsWith('hanja-')) {
-          console.log('Hanja category detected, returning empty result');
+          const grade = category.replace('hanja-', '');
+          const gradeMap: Record<string, string> = {
+            '8': '8급',
+            '7': '7급', 
+            '6': '6급',
+            '5': '5급',
+            '4': '4급',
+            '3': '3급',
+            '2': '2급',
+            '1': '1급',
+            'special': '특급'
+          };
+          
+          const hanjaGrade = gradeMap[grade] || grade;
+          console.log(`Hanja category ${hanjaGrade} detected`);
           setWords([]);
           setAllWordsData([]);
           setHasMore(false);
-          setError('한자 기능은 준비 중입니다.');
+          setError(`${hanjaGrade} 한자 데이터 준비 중입니다.`);
           setLoading(false);
           return;
         }

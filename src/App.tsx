@@ -21,9 +21,15 @@ function App() {
     gtelp: 'gtelp',
     'kr-en-basic': 'kr-en-basic',
     'thai-conversation': 'thai-conversation',
-    'hanja-basic': 'hanja-basic',
-    'hanja-middle': 'hanja-middle',
-    'hanja-advanced': 'hanja-advanced',
+    'hanja-8': 'hanja-8',
+    'hanja-7': 'hanja-7',
+    'hanja-6': 'hanja-6',
+    'hanja-5': 'hanja-5',
+    'hanja-4': 'hanja-4',
+    'hanja-3': 'hanja-3',
+    'hanja-2': 'hanja-2',
+    'hanja-1': 'hanja-1',
+    'hanja-special': 'hanja-special',
     'random-study': 'toeic', // 기본값, 실제 랜덤은 아래에서 처리
     'random-quiz': 'toeic', // 기본값, 실제 랜덤은 아래에서 처리
   };
