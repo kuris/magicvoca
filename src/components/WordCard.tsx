@@ -50,8 +50,11 @@ export const WordCard: React.FC<WordCardProps> = ({ word, category }) => {
     if ('speechSynthesis' in window) {
       let text = word.english;
       let lang = 'en-US';
-      // 일반회화(kr-en-basic 또는 '일반회화')는 한국어를 읽어야 함
-      if (category === 'kr-en-basic' || category === '일반회화') {
+      // 한자 급수 카테고리일 때: 음과 뜻을 합쳐서 읽기
+      if (category && category.startsWith('hanja-')) {
+        text = `${word.korean}${word.pronunciation ? ', ' + word.pronunciation : ''}`;
+        lang = 'ko-KR';
+      } else if (category === 'kr-en-basic' || category === '일반회화') {
         text = word.korean;
         lang = 'ko-KR';
       } else if (category === 'thai-conversation') {

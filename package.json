@@ -16,6 +16,7 @@
     "@vercel/speed-insights": "^1.2.0",
     "csv-parse": "^6.1.0",
     "dotenv": "^17.2.2",
+    "esbuild": "^0.25.9",
     "fs": "^0.0.1-security",
     "lucide-react": "^0.344.0",
     "papaparse": "^5.5.3",
