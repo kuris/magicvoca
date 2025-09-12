@@ -60,9 +60,12 @@ export const QuizCard: React.FC<QuizCardProps> = ({ word, options, category, onN
   // 문제/보기 언어 분기
   const isKoreanBasic = category === 'kr-en-basic';
   const isThaiConversation = category === 'thai-conversation';
+  const isHanjaCategory = category && category.startsWith('hanja-');
   // 태국어회화: 문제는 한국어 뜻, 정답은 태국어 발음
   const quizQuestion = isThaiConversation ? word.korean : (isKoreanBasic ? word.korean : word.english);
-  const correctAnswer = isThaiConversation ? word.pronunciation : (isKoreanBasic ? word.english : word.korean);
+  const correctAnswer = isHanjaCategory
+    ? `${word.korean || ''} / ${word.pronunciation || ''}`
+    : (isThaiConversation ? word.pronunciation : (isKoreanBasic ? word.english : word.korean));
   const isCorrect = selected === correctAnswer;
 
   return (

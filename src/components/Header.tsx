@@ -150,7 +150,7 @@ export const Header: React.FC<HeaderProps> = ({ category, setCategory }) => {
         {categories.map(cat => (
           <button
             key={cat.key}
-            className={`min-w-[70px] sm:min-w-[120px] font-semibold px-2 sm:px-4 py-1 rounded-full transition-colors whitespace-nowrap
+            className={`min-w-[70px] sm:min-w-[120px] font-semibold px-2 sm:px-4 py-1 rounded-full transition-colors whitespace-nowrap mx-1
               ${category === cat.key ? 'bg-purple-100 text-purple-700' : 'text-purple-600 hover:bg-purple-100'}
               ${!cat.available ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ''}
             `}

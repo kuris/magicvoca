@@ -21,7 +21,7 @@ export function useWords(category?: string) {
         
         console.log('Fetching words with category filter:', category);
 
-        // 한자 카테고리 처리 (기존 DB 건드리지 않고 별도 테이블 사용 예정)
+        // 한자 카테고리 처리 (hanja_characters 테이블에서 조회)
         if (category && category.startsWith('hanja-')) {
           const grade = category.replace('hanja-', '');
           const gradeMap: Record<string, string> = {
@@ -35,14 +35,37 @@ export function useWords(category?: string) {
             '1': '1급',
             'special': '특급'
           };
-          
           const hanjaGrade = gradeMap[grade] || grade;
           console.log(`Hanja category ${hanjaGrade} detected`);
-          setWords([]);
+          // hanja_characters 테이블에서 해당 급수 데이터 조회
+          const { data, error } = await supabase
+            .from('hanja_characters')
+            .select('id, hanja, main_sound, korean, radical, strokes, total_strokes, level')
+            .eq('level', hanjaGrade)
+            .order('id', { ascending: true });
+          if (error) {
+            console.error('Error fetching hanja:', error);
+            setError(error.message);
+            setLoading(false);
+            return;
+          }
+          const allHanjaData = data || [];
+          // 한자 데이터 변환
+          const allWords: Word[] = allHanjaData.map((w: any) => ({
+            id: w.id,
+            english: w.hanja, // 한자 자체를 english에 매핑
+            korean: w.korean, // 뜻(한국어 의미)
+            pronunciation: w.main_sound, // 음(훈)
+            partOfSpeech: `${w.strokes}획/${w.total_strokes}총획`,
+            tip: w.korean, // 의미(한국어 뜻)
+            categories: [hanjaGrade]
+          }));
+          setWords(allWords);
           setAllWordsData([]);
-          setHasMore(false);
-          setError(`${hanjaGrade} 한자 데이터 준비 중입니다.`);
+          setCurrentPage(1);
           setLoading(false);
+          setHasMore(false);
+          setError(null);
           return;
         }
 

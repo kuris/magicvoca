@@ -88,6 +88,8 @@ export const WordCard: React.FC<WordCardProps> = ({ word, category }) => {
     return hashtagMap[hashtag] || hashtag;
   };
 
+  // 한자 급수 카테고리 여부
+  const isHanjaCategory = category && category.startsWith('hanja-');
   return (
     <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
       <div className="text-center">
@@ -104,25 +106,50 @@ export const WordCard: React.FC<WordCardProps> = ({ word, category }) => {
             ))}
           </div>
         )}
-        
-        <div className="flex items-center justify-center gap-4 mb-4">
-          <h1
-            className="font-bold text-gray-800 tracking-wide mx-auto text-2xl sm:text-5xl sm:max-w-none max-w-[220px] break-words sm:whitespace-nowrap whitespace-normal"
-            style={{
-              fontSize: (isKoreanBasic ? undefined : (word.english.length > 12 ? '2.2rem' : '3rem')),
-              wordBreak: 'break-word',
-              lineHeight: '1.2',
-            }}
-          >
-            {isThaiConversation ? word.korean : (isKoreanBasic ? word.korean : word.english)}
-          </h1>
-          <button
-            onClick={speakWord}
-            className="p-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
-            title="발음 듣기"
-          >
-            <Volume2 size={24} />
-          </button>
+        <div className="flex flex-col items-center justify-center mb-4">
+          {/* 한자 급수일 때 한자 크게, 뜻/음 아래에 */}
+          {isHanjaCategory ? (
+            <>
+              <h1
+                className="font-bold text-gray-800 tracking-wide mx-auto text-5xl sm:text-7xl mb-2"
+                style={{ lineHeight: '1.1' }}
+              >
+                {word.english}
+              </h1>
+              {/* 뜻과 음을 한 줄에 나란히 */}
+              <div className="flex flex-row items-center justify-center gap-3 mb-1">
+                <span className="text-2xl text-gray-700 font-medium">{word.korean}</span>
+                <span className="text-lg text-blue-700 font-semibold">{word.pronunciation}</span>
+              </div>
+              <button
+                onClick={speakWord}
+                className="p-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl mt-2"
+                title="발음 듣기"
+              >
+                <Volume2 size={24} />
+              </button>
+            </>
+          ) : (
+            <>
+              <h1
+                className="font-bold text-gray-800 tracking-wide mx-auto text-2xl sm:text-5xl sm:max-w-none max-w-[220px] break-words sm:whitespace-nowrap whitespace-normal"
+                style={{
+                  fontSize: (isKoreanBasic ? undefined : (word.english.length > 12 ? '2.2rem' : '3rem')),
+                  wordBreak: 'break-word',
+                  lineHeight: '1.2',
+                }}
+              >
+                {isThaiConversation ? word.korean : (isKoreanBasic ? word.korean : word.english)}
+              </h1>
+              <button
+                onClick={speakWord}
+                className="p-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                title="발음 듣기"
+              >
+                <Volume2 size={24} />
+              </button>
+            </>
+          )}
         </div>
         {isThaiConversation && word.english && (
           <p className="text-xl text-blue-700 mb-2 font-mono">{word.english}</p>
@@ -130,13 +157,18 @@ export const WordCard: React.FC<WordCardProps> = ({ word, category }) => {
         {isThaiConversation && word.pronunciation && (
           <p className="text-lg text-gray-500 mb-4 font-mono">{word.pronunciation}</p>
         )}
-        {!isThaiConversation && word.pronunciation && (
+        {/* 한자 급수일 때는 부수(Pronunciation) 표시하지 않음 */}
+        {!isHanjaCategory && !isThaiConversation && word.pronunciation && (
           <p className="text-lg text-gray-500 mb-4 font-mono">{word.pronunciation}</p>
         )}
         <div className="w-24 h-1 bg-gradient-to-r from-pink-400 to-blue-500 rounded-full mx-auto mb-6"></div>
-        <p className="text-2xl text-gray-700 font-medium leading-relaxed">
-          {isThaiConversation ? '' : (isKoreanBasic ? word.english : word.korean)}
-        </p>
+        {/* 한자 급수일 때는 음(훈)과 뜻을 모두 표시 */}
+        {/* 한자 급수일 때는 아래에 아무것도 추가로 표시하지 않음 (이미 위에서 표시됨) */}
+        {!isHanjaCategory && (
+          <p className="text-2xl text-gray-700 font-medium leading-relaxed">
+            {isThaiConversation ? '' : (isKoreanBasic ? word.english : word.korean)}
+          </p>
+        )}
       </div>
     </div>
   );
