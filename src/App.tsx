@@ -11,6 +11,29 @@ import { useWords } from './hooks/useWords';
 import { useComments } from './hooks/useComments';
 
 function App() {
+  // Supabase DB 연결 테스트
+  React.useEffect(() => {
+    async function testSupabaseConnection() {
+      try {
+        console.log('[Supabase Test] DB 연결 테스트 시작');
+        // hanja_characters 테이블에서 1개만 조회
+        const { data, error } = await import('./lib/supabase').then(mod => mod.supabase
+          .from('hanja_characters')
+          .select('*')
+          .limit(1)
+        );
+        console.log('[Supabase Test] 결과:', { data, error });
+        if (error) {
+          console.error('[Supabase Test] DB 연결 에러:', error);
+        } else {
+          console.log('[Supabase Test] DB 연결 성공, 데이터:', data);
+        }
+      } catch (err) {
+        console.error('[Supabase Test] 예외 발생:', err);
+      }
+    }
+    testSupabaseConnection();
+  }, []);
   const [mode, setMode] = useState<'study' | 'quiz' | 'random-study' | 'random-quiz'>('study');
   // 탭 key와 DB category 매핑
   const tabToCategory: Record<string, string> = {

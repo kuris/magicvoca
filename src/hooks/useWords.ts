@@ -18,8 +18,9 @@ export function useWords(category?: string) {
       try {
         setLoading(true);
         setError(null);
-        
-        console.log('Fetching words with category filter:', category);
+
+        console.log('[useWords] DB fetch start. category:', category);
+        console.log('[useWords] Supabase client:', supabase);
 
         // 한자 카테고리 처리 (hanja_characters 테이블에서 조회)
         if (category && category.startsWith('hanja-')) {
@@ -36,20 +37,22 @@ export function useWords(category?: string) {
             'special': '특급'
           };
           const hanjaGrade = gradeMap[grade] || grade;
-          console.log(`Hanja category ${hanjaGrade} detected`);
+          console.log(`[useWords] Hanja category detected: ${hanjaGrade}`);
           // hanja_characters 테이블에서 해당 급수 데이터 조회
           const { data, error } = await supabase
             .from('hanja_characters')
             .select('id, hanja, main_sound, korean, radical, strokes, total_strokes, level')
             .eq('level', hanjaGrade)
             .order('id', { ascending: true });
+          console.log('[useWords] Hanja query result:', { data, error });
           if (error) {
-            console.error('Error fetching hanja:', error);
+            console.error('[useWords] Error fetching hanja:', error);
             setError(error.message);
             setLoading(false);
             return;
           }
           const allHanjaData = data || [];
+          console.log('[useWords] Hanja data:', allHanjaData);
           // 한자 데이터 변환
           const allWords: Word[] = allHanjaData.map((w: any) => ({
             id: w.id,
@@ -60,6 +63,7 @@ export function useWords(category?: string) {
             tip: w.korean, // 의미(한국어 뜻)
             categories: [hanjaGrade]
           }));
+          console.log('[useWords] Hanja allWords:', allWords);
           setWords(allWords);
           setAllWordsData([]);
           setCurrentPage(1);
@@ -79,16 +83,16 @@ export function useWords(category?: string) {
             : category.toLowerCase() === 'kr-en-basic'
             ? 'KOREAN'
             : category.toUpperCase();
-          
+          console.log('[useWords] Category name for DB:', categoryName);
           // 1. 카테고리 ID 찾기
-          const { data: categoryData } = await supabase
+          const { data: categoryData, error: categoryError } = await supabase
             .from('categories')
             .select('id')
             .eq('name', categoryName)
             .single();
-            
+          console.log('[useWords] Category ID query result:', { categoryData, categoryError });
           if (!categoryData) {
-            console.log(`Category ${categoryName} not found`);
+            console.log(`[useWords] Category ${categoryName} not found`);
             setWords([]);
             setAllWordsData([]);
             setHasMore(false);
@@ -96,7 +100,6 @@ export function useWords(category?: string) {
             setLoading(false);
             return;
           }
-          
           // 2. word_categories 테이블을 통한 총 개수 확인
           const { count: totalWordsCount } = await supabase
             .from('word_categories')
