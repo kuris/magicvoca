@@ -9,9 +9,13 @@ interface HeaderProps {
 const LANGUAGES = [
   { code: 'US', label: 'US', flag: '/flags/us.png', available: true },
   { code: 'KR', label: 'KR', flag: '/flags/kr.png', available: true },
-  { code: 'JP', label: 'JP', flag: '/flags/jp.png', available: false },
   { code: 'TH', label: 'TH', flag: '/flags/th.png', available: true },
-  { code: 'CN', label: 'CN', flag: '/flags/cn.png', available: false },
+];
+
+const HANJA_CATEGORIES = [
+  { key: 'hanja-basic', label: '기초한자', available: true },
+  { key: 'hanja-middle', label: '중급한자', available: false },
+  { key: 'hanja-advanced', label: '고급한자', available: false },
 ];
 
 export const Header: React.FC<HeaderProps> = ({ category, setCategory }) => {
@@ -23,22 +27,41 @@ export const Header: React.FC<HeaderProps> = ({ category, setCategory }) => {
     alert('소개글과 링크가 복사되었습니다! 친구에게 공유해보세요.');
   };
   const [selectedLang, setSelectedLang] = useState('US');
+  const [selectedTab, setSelectedTab] = useState<'language' | 'hanja'>('language');
 
-  // category가 바뀌면 selectedLang도 동기화 (카테고리 직접 변경 시에도 언어 탭 반영)
+  // category가 바뀌면 selectedLang과 selectedTab도 동기화
   React.useEffect(() => {
     const catObj = allCategories.find(cat => cat.key === category);
     if (catObj && catObj.lang !== selectedLang) {
       setSelectedLang(catObj.lang);
+      setSelectedTab('language');
+    }
+    
+    // 한자 카테고리인지 확인
+    const isHanjaCategory = HANJA_CATEGORIES.some(cat => cat.key === category);
+    if (isHanjaCategory && selectedTab !== 'hanja') {
+      setSelectedTab('hanja');
     }
   }, [category]);
 
   // 언어 선택 시 첫 번째 카테고리 자동 선택
   const handleLangSelect = (langCode: string) => {
     setSelectedLang(langCode);
+    setSelectedTab('language');
     // 항상 해당 언어의 첫 카테고리로 변경
     const filtered = allCategories.filter(cat => cat.lang === langCode);
     if (filtered.length > 0) {
       setCategory(filtered[0].key);
+    }
+  };
+
+  // 한자 탭 선택 시
+  const handleHanjaSelect = () => {
+    setSelectedTab('hanja');
+    // 첫 번째 사용 가능한 한자 카테고리로 변경
+    const availableHanja = HANJA_CATEGORIES.find(cat => cat.available);
+    if (availableHanja) {
+      setCategory(availableHanja.key);
     }
   };
   // 영어 관련 카테고리만 보여주기 (US 선택 시)
@@ -53,7 +76,11 @@ export const Header: React.FC<HeaderProps> = ({ category, setCategory }) => {
   ];
   type Category = { key: string; label: string; available: boolean; lang: string };
   let categories: Category[] = [];
-  if (selectedLang === 'US') {
+  
+  if (selectedTab === 'hanja') {
+    // 한자 카테고리들을 Category 타입으로 변환
+    categories = HANJA_CATEGORIES.map(cat => ({ ...cat, lang: 'HANJA' }));
+  } else if (selectedLang === 'US') {
     categories = allCategories.filter(cat => cat.lang === 'US');
   } else if (selectedLang === 'KR') {
     categories = allCategories.filter(cat => cat.lang === 'KR');
@@ -76,22 +103,36 @@ export const Header: React.FC<HeaderProps> = ({ category, setCategory }) => {
         </button>
       </div>
       <div className="flex flex-col items-center w-full mb-2">
-        <span className="text-white font-semibold mb-1">🌐 학습 언어 선택</span>
-  <div className="flex gap-1 sm:gap-2 overflow-x-auto scrollbar-hide whitespace-nowrap justify-center">
-          {LANGUAGES.map(lang => (
-            <button
-              key={lang.code}
-              className={`min-w-[60px] font-semibold px-2 py-1 rounded-full transition-colors whitespace-nowrap flex items-center gap-1
-                ${selectedLang === lang.code ? 'bg-white text-purple-600 font-bold' : ''}
-                ${lang.available ? 'bg-white text-purple-600 hover:bg-purple-100' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}
-              `}
-              disabled={!lang.available}
-              onClick={() => lang.available && handleLangSelect(lang.code)}
-            >
-              <img src={lang.flag} alt={lang.label + ' flag'} className="w-6 h-6" />
-              <span>{lang.label}</span>
-            </button>
-          ))}
+        <span className="text-white font-semibold mb-1">🌐 카테고리 선택</span>
+        
+        {/* 언어/한자 탭 선택 */}
+        <div className="flex gap-2 mb-2">
+          <div className="flex gap-1 sm:gap-2 overflow-x-auto scrollbar-hide whitespace-nowrap justify-center">
+            {LANGUAGES.map(lang => (
+              <button
+                key={lang.code}
+                className={`min-w-[60px] font-semibold px-2 py-1 rounded-full transition-colors whitespace-nowrap flex items-center gap-1
+                  ${selectedTab === 'language' && selectedLang === lang.code ? 'bg-white text-purple-600 font-bold' : ''}
+                  ${lang.available ? 'bg-white text-purple-600 hover:bg-purple-100' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}
+                `}
+                disabled={!lang.available}
+                onClick={() => lang.available && handleLangSelect(lang.code)}
+              >
+                <img src={lang.flag} alt={lang.label + ' flag'} className="w-6 h-6" />
+                <span>{lang.label}</span>
+              </button>
+            ))}
+          </div>
+          
+          {/* 한자 탭 */}
+          <button
+            className={`min-w-[60px] font-semibold px-3 py-1 rounded-full transition-colors whitespace-nowrap
+              ${selectedTab === 'hanja' ? 'bg-white text-purple-600 font-bold' : 'bg-white text-purple-600 hover:bg-purple-100'}
+            `}
+            onClick={handleHanjaSelect}
+          >
+            <span>📜 한자</span>
+          </button>
         </div>
       </div>
       <nav

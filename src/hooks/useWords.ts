@@ -21,6 +21,17 @@ export function useWords(category?: string) {
         
         console.log('Fetching words with category filter:', category);
 
+        // 한자 카테고리는 아직 미구현이므로 빈 결과 반환
+        if (category && category.startsWith('hanja-')) {
+          console.log('Hanja category detected, returning empty result');
+          setWords([]);
+          setAllWordsData([]);
+          setHasMore(false);
+          setError('한자 기능은 준비 중입니다.');
+          setLoading(false);
+          return;
+        }
+
         let firstBatchData: any[] = [];
         let totalCount = 0;
 

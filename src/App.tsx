@@ -21,6 +21,9 @@ function App() {
     gtelp: 'gtelp',
     'kr-en-basic': 'kr-en-basic',
     'thai-conversation': 'thai-conversation',
+    'hanja-basic': 'hanja-basic',
+    'hanja-middle': 'hanja-middle',
+    'hanja-advanced': 'hanja-advanced',
     'random-study': 'toeic', // 기본값, 실제 랜덤은 아래에서 처리
     'random-quiz': 'toeic', // 기본값, 실제 랜덤은 아래에서 처리
   };
