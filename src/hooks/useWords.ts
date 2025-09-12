@@ -2,380 +2,251 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Word } from '../types';
 
-const WORDS_PER_PAGE = 50;
-
-// 해시태그(다중 카테고리) 로드 함수
-async function loadHashtagsForWords(words: Word[]) {
-  try {
-    const englishWords = words.map(w => w.english);
-    console.log('=== 해시태그 로드 시작 ===');
-    console.log('영어 단어들:', englishWords.slice(0, 5));
-    
-    // word_hashtags에서 해당 단어들의 해시태그 정보 가져오기
-    const { data: hashtagData, error: hashtagError } = await supabase
-      .from('word_hashtags')
-      .select('english, hashtag')
-      .in('english', englishWords);
-    
-    console.log('word_hashtags 데이터:', hashtagData?.length || 0, '개');
-    console.log('word_hashtags 샘플:', hashtagData?.slice(0, 5));
-    
-    if (hashtagError) {
-      console.error('Error loading hashtags:', hashtagError);
-      return;
-    }
-
-    // 단어별로 해시태그 그룹화
-    const hashtagMap = new Map<string, string[]>();
-    hashtagData?.forEach(item => {
-      if (!hashtagMap.has(item.english)) {
-        hashtagMap.set(item.english, []);
-      }
-      hashtagMap.get(item.english)!.push(item.hashtag);
-    });
-
-    console.log('해시태그 맵 생성 완료, 단어 수:', hashtagMap.size);
-    console.log('샘플 해시태그:', Array.from(hashtagMap.entries()).slice(0, 3));
-
-    // words 배열에 해시태그 추가
-    let successCount = 0;
-    words.forEach(word => {
-      const hashtags = hashtagMap.get(word.english) || [];
-      (word as any).hashtags = hashtags;
-      if (hashtags.length > 0) {
-        successCount++;
-        if (successCount <= 3) { // 처음 3개만 로그
-          console.log(`${word.english}: ${hashtags.join(', ')}`);
-        }
-      }
-    });
-
-    console.log(`해시태그 할당 완료: ${successCount}/${words.length} 단어에 해시태그 적용`);
-    console.log('=== 해시태그 로드 완료 ===');
-  } catch (error) {
-    console.error('Error in loadHashtagsForWords:', error);
-  }
-}
-
-export function useWords(category: string) {
+export function useWords(category?: string) {
   const [words, setWords] = useState<Word[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [totalAvailable, setTotalAvailable] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [allWordsData, setAllWordsData] = useState<Word[]>([]);
+  const [currentPage, setCurrentPage] = useState(0);
+
+  const WORDS_PER_PAGE = 50;
 
   useEffect(() => {
     async function fetchAllWords() {
-      setLoading(true);
-      setError(null);
-      
       try {
-        // 한국어와 태국어, TOEIC, 수능, TOEFL, 공무원, GTELP은 기존 운영사이트 방식 사용 (category 컬럼으로 직접 필터링)
-        if (category === 'kr-en-basic' || category === 'thai-conversation' || 
-            category === 'toeic' || category === 'suneung' || 
-            category === 'toefl' || category === 'gongmuwon' || category === 'gtelp') {
-          console.log(`Loading ${category} words using legacy method`);
-          
-          // 기존 방식: category 컬럼으로 직접 필터링
-          const { data: firstData, error: firstError } = await supabase
-            .from('words')
-            .select('*')
-            .eq('category', category)
-            .order('id', { ascending: true })
-            .range(0, 49);
-
-          if (firstError) {
-            console.error(`Error fetching ${category} words:`, firstError);
-            setError(firstError.message);
-            setLoading(false);
-            return;
-          }
-
-          const firstWords: Word[] = (firstData || []).map((w: any) => ({
-            id: w.id,
-            english: w.english,
-            korean: w.korean,
-            pronunciation: w.pronunciation,
-            partOfSpeech: w.part_of_speech,
-            tip: w.tip,
-            categories: [] // 해시태그는 별도로 로드
-          }));
-
-          // 해시태그(다중 카테고리) 정보 추가 로드
-          if (firstWords.length > 0) {
-            await loadHashtagsForWords(firstWords);
-          }
-
-          // 디버깅: 일반 학습 모드에서의 데이터 순서 확인
-          console.log(`=== ${category} 일반 학습 모드 디버깅 ===`);
-          console.log('첫 10개 단어의 ID와 데이터:');
-          firstWords.slice(0, 10).forEach((word, index) => {
-            console.log(`Index ${index}: ID=${word.id}, English="${word.english}", Korean="${word.korean}"`);
-          });
-          
-          // ID 1, 2, 3번 단어 특별 확인
-          [1, 2, 3].forEach(id => {
-            const word = firstWords.find(w => w.id === id);
-            if (word) {
-              console.log(`ID ${id} 찾음: English="${word.english}", Korean="${word.korean}"`);
-            } else {
-              console.log(`ID ${id} 없음`);
-            }
-          });
-
-          // 디버깅: 데이터베이스에서 가져온 원본 데이터 확인
-          console.log('useWords - Raw data from database (first 3):', firstData?.slice(0, 3));
-          console.log('useWords - Mapped words (first 3):', firstWords.slice(0, 3));
-          
-          // ID 2번 단어 특별 확인
-          const rawWord2 = firstData?.find((w: any) => w.id === 2);
-          const mappedWord2 = firstWords.find(w => w.id === 2);
-          console.log('useWords - Raw word ID 2:', rawWord2);
-          console.log('useWords - Mapped word ID 2:', mappedWord2);
-
-          console.log(`${category} words loaded: ${firstWords.length} words`);
-          setWords(firstWords);
-          setLoading(false);
-
-          // 백그라운드에서 나머지 불러오기 (기존 방식)
-          loadLegacyWordsInBackground(category, firstWords);
-          return;
-        }
-
-        // 영어 시험 카테고리들은 다중 카테고리 시스템 사용
-        console.log('Loading categories and word relationships...');
+        setLoading(true);
+        setError(null);
         
-        // Supabase 제한을 피하기 위해 여러 배치로 가져오기
-        let allWordCategoriesData: any[] = [];
-        let from = 0;
-        const batchSize = 1000;
-        
-        while (true) {
-          const { data: batch, error: batchError } = await supabase
-            .from('word_categories')
-            .select('word_id, category_id')
-            .range(from, from + batchSize - 1);
+        console.log('Fetching words with category filter:', category);
+
+        let firstBatchData: any[] = [];
+        let totalCount = 0;
+
+        if (category && ['thai', 'korean', 'thai-conversation', 'kr-en-basic'].includes(category.toLowerCase())) {
+          // THAI, KOREAN, THAI-CONVERSATION, KR-EN-BASIC 카테고리는 간접 조회 방식
+          const categoryName = category.toLowerCase() === 'thai-conversation' 
+            ? 'THAI-CONVERSATION' 
+            : category.toLowerCase() === 'kr-en-basic'
+            ? 'KOREAN'
+            : category.toUpperCase();
           
-          if (batchError) {
-            console.error('Error fetching word_categories batch:', batchError);
-            break;
-          }
-          
-          if (!batch || batch.length === 0) {
-            break;
-          }
-          
-          allWordCategoriesData = allWordCategoriesData.concat(batch);
-          
-          if (batch.length < batchSize) {
-            break; // 마지막 배치
-          }
-          
-          from += batchSize;
-        }
-
-        const wordCategoriesData = allWordCategoriesData;
-        
-        const { data: categoriesData, error: catError } = await supabase
-          .from('categories')
-          .select('id, name');
-
-        console.log('Word categories data:', wordCategoriesData?.length || 0, 'relationships');
-        console.log('Categories data:', categoriesData);
-
-        if (catError) {
-          console.error('Error fetching categories:', catError);
-          setError('Failed to fetch categories');
-          setLoading(false);
-          return;
-        }
-
-        // 카테고리 매핑 생성
-        const categoryMap = new Map();
-        if (categoriesData) {
-          categoriesData.forEach((cat: any) => {
-            categoryMap.set(cat.id, cat.name);
-          });
-        }
-
-        // 단어별 카테고리 매핑 생성
-        const wordCategoryMap = new Map();
-        if (wordCategoriesData) {
-          wordCategoriesData.forEach((wc: any) => {
-            if (!wordCategoryMap.has(wc.word_id)) {
-              wordCategoryMap.set(wc.word_id, []);
-            }
-            const categoryName = categoryMap.get(wc.category_id);
-            if (categoryName) {
-              wordCategoryMap.get(wc.word_id).push(categoryName);
-            }
-          });
-        }
-
-        // 카테고리 필터링 적용하여 word_id 추출
-        let filteredWordCategories = wordCategoriesData || [];
-        
-        if (category && categoriesData) {
-          const targetCategory = categoriesData.find((cat: any) => cat.name.toLowerCase() === category.toLowerCase());
-          if (targetCategory) {
-            filteredWordCategories = wordCategoriesData?.filter((wc: any) => wc.category_id === targetCategory.id) || [];
-            console.log(`Found category ${category} with ${filteredWordCategories.length} word relationships`);
-          } else {
-            console.log(`Category ${category} not found`);
+          // 1. 카테고리 ID 찾기
+          const { data: categoryData } = await supabase
+            .from('categories')
+            .select('id')
+            .eq('name', categoryName)
+            .single();
+            
+          if (!categoryData) {
+            console.log(`Category ${categoryName} not found`);
             setWords([]);
-            setTotalAvailable(0);
+            setAllWordsData([]);
+            setHasMore(false);
+            setError(`${categoryName} 카테고리를 찾을 수 없습니다.`);
             setLoading(false);
             return;
           }
+          
+          // 2. word_categories 테이블을 통한 총 개수 확인
+          const { count: totalWordsCount } = await supabase
+            .from('word_categories')
+            .select('*', { count: 'exact', head: true })
+            .eq('category_id', categoryData.id);
+            
+          totalCount = totalWordsCount || 0;
+          
+          if (totalCount === 0) {
+            console.log(`No words found for category ${categoryName}`);
+            setWords([]);
+            setAllWordsData([]);
+            setHasMore(false);
+            setError(`${categoryName} 카테고리에 등록된 단어가 없습니다.`);
+            setLoading(false);
+            return;
+          }
+          
+          // 3. JOIN을 사용한 첫 배치 단어들 조회 (페이지네이션 적용)
+          const { data, error } = await supabase
+            .from('words')
+            .select(`
+              id, english, korean, pronunciation, part_of_speech, tip, 
+              is_toeic, is_toefl, is_gtelp, is_suneung, is_gongmuwon,
+              word_categories!inner(category_id)
+            `)
+            .eq('word_categories.category_id', categoryData.id)
+            .order('id', { ascending: true })
+            .range(0, WORDS_PER_PAGE - 1);
+            
+          if (error) {
+            console.error('Error fetching words:', error);
+            setError(error.message);
+            setLoading(false);
+            return;
+          }
+          
+          firstBatchData = data || [];
+          
+        } else {
+          // 영어 카테고리들은 Boolean 컬럼 방식 사용
+          let query = supabase
+            .from('words')
+            .select('id, english, korean, pronunciation, part_of_speech, tip, is_toeic, is_toefl, is_gtelp, is_suneung, is_gongmuwon');
+
+          // 카테고리별 필터링
+          if (category) {
+            const categoryColumn = getCategoryColumn(category);
+            if (categoryColumn) {
+              query = query.eq(categoryColumn, true);
+            } else {
+              console.log(`Unknown category: ${category}`);
+              setWords([]);
+              setAllWordsData([]);
+              setHasMore(false);
+              setLoading(false);
+              return;
+            }
+          }
+
+          // 첫 배치만 즉시 로딩
+          const { data: firstBatchData_temp, error: firstBatchError } = await query
+            .order('id', { ascending: true })
+            .range(0, WORDS_PER_PAGE - 1);
+
+          if (firstBatchError) {
+            console.error('Error fetching first batch:', firstBatchError);
+            setError(firstBatchError.message);
+            setLoading(false);
+            return;
+          }
+
+          firstBatchData = firstBatchData_temp || [];
+
+          // count 쿼리
+          let countQuery = supabase
+            .from('words')
+            .select('id', { count: 'exact', head: true });
+
+          if (category) {
+            const categoryColumn = getCategoryColumn(category);
+            if (categoryColumn) {
+              countQuery = countQuery.eq(categoryColumn, true);
+            }
+          }
+
+          const { count, error: countError } = await countQuery;
+          
+          if (countError) {
+            console.error('Error getting count:', countError);
+            totalCount = firstBatchData.length;
+          } else {
+            totalCount = count || 0;
+          }
         }
 
-        // 필터링된 단어 ID들 추출
-        const wordIds = filteredWordCategories.map((wc: any) => wc.word_id);
-        console.log(`Total word IDs to fetch: ${wordIds.length}`);
-
-        if (wordIds.length === 0) {
-          setWords([]);
-          setTotalAvailable(0);
-          setLoading(false);
-          return;
-        }
-
-        // 첫 50개 단어 가져오기
-        const firstBatch = wordIds.slice(0, WORDS_PER_PAGE);
-        
-        const { data: firstWordsData, error: firstWordsError } = await supabase
-          .from('words')
-          .select('id, english, korean, pronunciation, part_of_speech, tip')
-          .in('id', firstBatch)
-          .order('id', { ascending: true });
-
-        if (firstWordsError) {
-          console.error('Error fetching first batch:', firstWordsError);
-          setError(firstWordsError.message);
-          setLoading(false);
-          return;
-        }
-
-        // 첫 배치 단어들 (카테고리 해시태그 포함)
-        const firstWords: Word[] = (firstWordsData || []).map((w: any) => ({
+        // 첫 배치 단어들 변환
+        const firstWords: Word[] = firstBatchData.map((w: any) => ({
           id: w.id,
           english: w.english,
           korean: w.korean,
           pronunciation: w.pronunciation,
           partOfSpeech: w.part_of_speech,
           tip: w.tip,
-          categories: wordCategoryMap.get(w.id) || []
+          categories: getWordCategories(w, category) // 카테고리 정보 포함
         }));
 
         console.log(`First batch loaded: ${firstWords.length} words`);
         setWords(firstWords);
-        setTotalAvailable(wordIds.length);
+        setCurrentPage(1);
         setLoading(false);
-
-        // 나머지 단어들을 백그라운드에서 로딩
-        if (wordIds.length > WORDS_PER_PAGE) {
-          setHasMore(true);
-          loadRemainingWordsInBackground(wordIds.slice(WORDS_PER_PAGE), wordCategoryMap);
-        } else {
-          setHasMore(false);
+        setHasMore(totalCount > WORDS_PER_PAGE);
+        
+        // 백그라운드에서 나머지 데이터 로딩
+        if (totalCount > WORDS_PER_PAGE) {
+          loadRemainingWordsInBackground(category, WORDS_PER_PAGE);
         }
 
       } catch (err) {
-        console.error('Error loading words:', err);
+        console.error('Error in fetchAllWords:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch words');
         setLoading(false);
       }
     }
 
-    // 기존 운영사이트 방식으로 나머지 단어들 백그라운드 로딩
-    async function loadLegacyWordsInBackground(dbCategory: string, initialWords: Word[]) {
-      try {
-        console.log(`Loading remaining ${dbCategory} words in background...`);
-        
-        let allWords = [...initialWords];
-        let offset = 50;
-        const pageSize = 1000;
-        let hasMore = true;
-        
-        while (hasMore) {
-          const { data, error } = await supabase
-            .from('words')
-            .select('*')
-            .eq('category', dbCategory)
-            .order('id', { ascending: true })
-            .range(offset, offset + pageSize - 1);
-
-          if (error) {
-            console.error(`Error fetching ${dbCategory} background batch:`, error);
-            break;
-          }
-
-          if (data && data.length > 0) {
-            const newWords: Word[] = data.map((w: any) => ({
-              id: w.id,
-              english: w.english,
-              korean: w.korean,
-              pronunciation: w.pronunciation,
-              partOfSpeech: w.part_of_speech,
-              tip: w.tip,
-              categories: [] // 해시태그는 별도로 로드
-            }));
-
-            // 백그라운드 로드된 단어들에도 해시태그 추가
-            if (newWords.length > 0) {
-              await loadHashtagsForWords(newWords);
-            }
-
-            allWords = allWords.concat(newWords);
-            setWords([...allWords]); // 실시간으로 추가
-            setTotalAvailable(allWords.length);
-            
-            hasMore = data.length === pageSize;
-            offset += pageSize;
-          } else {
-            hasMore = false;
-          }
-        }
-        
-        console.log(`Background loading completed: ${allWords.length} total ${dbCategory} words`);
-        setHasMore(false);
-
-      } catch (err) {
-        console.error(`Error loading ${dbCategory} words:`, err);
-      }
-    }
-
-    async function loadRemainingWordsInBackground(wordIds: number[], wordCategoryMap: Map<number, string[]>) {
+    async function loadRemainingWordsInBackground(category: string | undefined, offset: number) {
       try {
         console.log('Loading remaining words in background...');
         
-        // 나머지 단어들을 배치로 나누기
-        const batchSize = 1000;
-        const batches = [];
-        for (let i = 0; i < wordIds.length; i += batchSize) {
-          batches.push(wordIds.slice(i, i + batchSize));
-        }
-
         let allRemainingData: any[] = [];
-        for (let i = 0; i < batches.length; i++) {
-          const batch = batches[i];
-          console.log(`Loading background batch ${i + 1}/${batches.length} (${batch.length} words)`);
-          
-          const { data: batchData, error: batchError } = await supabase
-            .from('words')
-            .select('id, english, korean, pronunciation, part_of_speech, tip')
-            .in('id', batch)
-            .order('id', { ascending: true });
 
-          if (batchError) {
-            console.error(`Error fetching background batch ${i + 1}:`, batchError);
-            continue;
+        if (category && ['thai', 'korean', 'thai-conversation', 'kr-en-basic'].includes(category.toLowerCase())) {
+          // 조인 카테고리 처리
+          const categoryName = category.toLowerCase() === 'thai-conversation' 
+            ? 'THAI-CONVERSATION' 
+            : category.toLowerCase() === 'kr-en-basic'
+            ? 'KOREAN'
+            : category.toUpperCase();
+          
+          const { data: categoryData } = await supabase
+            .from('categories')
+            .select('id')
+            .eq('name', categoryName)
+            .single();
+            
+          if (!categoryData) return;
+          
+          // JOIN을 사용한 나머지 단어들 조회 (offset부터 끝까지)
+          const { data: remainingData } = await supabase
+            .from('words')
+            .select(`
+              id, english, korean, pronunciation, part_of_speech, tip, 
+              is_toeic, is_toefl, is_gtelp, is_suneung, is_gongmuwon,
+              word_categories!inner(category_id)
+            `)
+            .eq('word_categories.category_id', categoryData.id)
+            .order('id', { ascending: true })
+            .range(offset, offset + 2000); // 큰 범위로 나머지 가져오기
+            
+          allRemainingData = remainingData || [];
+          
+        } else {
+          // Boolean 컬럼 카테고리 처리
+          let query = supabase
+            .from('words')
+            .select('id, english, korean, pronunciation, part_of_speech, tip, is_toeic, is_toefl, is_gtelp, is_suneung, is_gongmuwon');
+
+          if (category) {
+            const categoryColumn = getCategoryColumn(category);
+            if (categoryColumn) {
+              query = query.eq(categoryColumn, true);
+            }
           }
 
-          if (batchData) {
+          const BATCH_SIZE = 1000;
+          let currentOffset = offset;
+
+          while (true) {
+            const { data: batchData, error: batchError } = await query
+              .order('id', { ascending: true })
+              .range(currentOffset, currentOffset + BATCH_SIZE - 1);
+
+            if (batchError) {
+              console.error(`Error fetching background batch:`, batchError);
+              break;
+            }
+
+            if (!batchData || batchData.length === 0) {
+              break;
+            }
+
             allRemainingData = allRemainingData.concat(batchData);
+            
+            if (batchData.length < BATCH_SIZE) {
+              break; // 마지막 배치
+            }
+            
+            currentOffset += BATCH_SIZE;
           }
         }
 
@@ -387,7 +258,7 @@ export function useWords(category: string) {
           pronunciation: w.pronunciation,
           partOfSpeech: w.part_of_speech,
           tip: w.tip,
-          categories: wordCategoryMap.get(w.id) || []
+          categories: getWordCategories(w, category)
         }));
 
         console.log(`Background loading completed: ${allWords.length} additional words loaded`);
@@ -399,6 +270,7 @@ export function useWords(category: string) {
     }
 
     fetchAllWords();
+    setCurrentPage(0); // 카테고리 변경 시 페이지 리셋
   }, [category]);
 
   // 더 많은 단어 로드 (레이지 로딩)
@@ -406,13 +278,17 @@ export function useWords(category: string) {
     if (loadingMore || !hasMore) return;
 
     setLoadingMore(true);
-    const nextBatch = allWordsData.slice(0, WORDS_PER_PAGE);
     
-    if (nextBatch.length > 0) {
-      setWords([...words, ...nextBatch]);
-      setAllWordsData(allWordsData.slice(WORDS_PER_PAGE));
+    const startIndex = currentPage * WORDS_PER_PAGE;
+    const endIndex = startIndex + WORDS_PER_PAGE;
+    const nextWords = allWordsData.slice(startIndex, endIndex);
+
+    if (nextWords.length > 0) {
+      setWords(prevWords => [...prevWords, ...nextWords]);
+      setCurrentPage(prev => prev + 1);
       
-      if (allWordsData.length <= WORDS_PER_PAGE) {
+      // 더 이상 로드할 단어가 없는지 확인
+      if (endIndex >= allWordsData.length) {
         setHasMore(false);
       }
     } else {
@@ -429,6 +305,45 @@ export function useWords(category: string) {
     hasMore,
     error, 
     loadMore,
-    totalWords: totalAvailable
+    totalWords: words.length + allWordsData.length
   };
+}
+
+// 카테고리 이름을 Boolean 컬럼명으로 변환 (영어 카테고리만)
+function getCategoryColumn(category: string): string | null {
+  const categoryMap: { [key: string]: string } = {
+    'toeic': 'is_toeic',
+    'toefl': 'is_toefl',
+    'gtelp': 'is_gtelp',
+    'suneung': 'is_suneung',
+    'gongmuwon': 'is_gongmuwon'
+  };
+
+  // THAI, KOREAN, THAI-CONVERSATION은 조인 방식을 사용하므로 null 반환
+  if (['thai', 'korean', 'thai-conversation', 'kr-en-basic'].includes(category.toLowerCase())) {
+    return null;
+  }
+
+  return categoryMap[category.toLowerCase()] || null;
+}
+
+// Boolean 컬럼들을 카테고리 배열로 변환
+function getWordCategories(word: any, currentCategory?: string): string[] {
+  const categories: string[] = [];
+  
+  // Boolean 컬럼 기반 카테고리들
+  if (word.is_toeic) categories.push('TOEIC');
+  if (word.is_toefl) categories.push('TOEFL');
+  if (word.is_gtelp) categories.push('GTELP');
+  if (word.is_suneung) categories.push('수능');
+  if (word.is_gongmuwon) categories.push('공무원');
+  
+  // 조인 기반 카테고리들 - 현재 조회한 카테고리 추가
+  if (currentCategory && ['thai', 'korean', 'thai-conversation', 'kr-en-basic'].includes(currentCategory.toLowerCase())) {
+    if (currentCategory.toLowerCase() === 'thai') categories.push('THAI');
+    else if (currentCategory.toLowerCase() === 'korean' || currentCategory.toLowerCase() === 'kr-en-basic') categories.push('KOREAN');
+    else if (currentCategory.toLowerCase() === 'thai-conversation') categories.push('THAI-CONVERSATION');
+  }
+  
+  return categories;
 }

@@ -12,10 +12,10 @@
     <meta name="description" content="마법처럼 쉽고 재미있는 영어, 한국어, 태국어 단어 학습 앱" />
     
     <!-- Apple PWA Meta Tags -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="MagicVoca" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
+    <link rel="apple-touch-icon" href="/favicon.ico" />
     
     <!-- Microsoft PWA Meta Tags -->
     <meta name="msapplication-TileColor" content="#667eea" />
@@ -27,17 +27,15 @@
     
     <!-- PWA Service Worker -->
     <script>
+      // Service Worker 비활성화 (개발 중)
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then((registration) => {
-              console.log('SW registered: ', registration);
-            })
-            .catch((registrationError) => {
-              console.log('SW registration failed: ', registrationError);
-            });
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+          }
         });
       }
+      console.log('Service Worker disabled for development');
     </script>
   </body>
 </html>

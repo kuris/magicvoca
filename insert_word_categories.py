@@ -24,8 +24,8 @@ with open("word_category_map.csv", encoding="utf-8") as f:
         category = row["category"]
         total += 1
 
-        # 단어 id 조회 (voca 컬럼 사용)
-        cur.execute("SELECT id FROM words WHERE voca = %s", (word,))
+        # 단어 id 조회 (english 컬럼 사용)
+        cur.execute("SELECT id FROM words WHERE english = %s", (word,))
         word_result = cur.fetchone()
         if not word_result:
             not_found_words.append(word)
