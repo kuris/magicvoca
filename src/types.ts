@@ -1,4 +1,5 @@
 export interface Word {
+  id?: number;
   hanja?: string;
   main_sound?: string;
   level?: string;

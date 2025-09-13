@@ -1,8 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 
+import fs from 'fs';
+
 dotenv.config({ path: '.env.local' });
 
+const logMsg = `[${new Date().toISOString()}] Connecting to Supabase: ${process.env.SUPABASE_URL}\n`;
+fs.appendFileSync('server.log', logMsg);
+console.log('Connecting to Supabase:', process.env.SUPABASE_URL);
+console.log('Connecting to Supabase:', process.env.SUPABASE_URL);
 const supabaseUrl = process.env.SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);

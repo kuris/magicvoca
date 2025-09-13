@@ -57,6 +57,10 @@ function App() {
     'random-quiz': 'toeic', // 기본값, 실제 랜덤은 아래에서 처리
   };
   const [tab, setTab] = useState('toeic');
+  // 탭이 변경될 때마다 인덱스 초기화
+  React.useEffect(() => {
+    setCurrentWordIndex(0);
+  }, [tab]);
   // mode에 따라 tab을 자동으로 맞추는 대신, tab은 카테고리만 담당
   const category = tabToCategory[tab];
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -84,13 +88,17 @@ function App() {
         console.log(`랜덤 모드 초기화: ${category} 카테고리에서 ${words.length}개 단어 중 ${randomIndex}번째 선택`);
         setCurrentWordIndex(randomIndex);
       } else {
-        console.log(`일반 모드 초기화: 첫 번째 단어로 설정`);
-        setCurrentWordIndex(0);
+        // 일반 모드에서는 단어 리스트가 바뀌어도 인덱스 유지
+        // 단, 현재 인덱스가 범위를 벗어나면 마지막 단어로 보정
+        setCurrentWordIndex((prev) => {
+          if (prev >= words.length) return words.length - 1;
+          return prev;
+        });
       }
     }
   }, [words, mode, category]);
   // Always call useComments, even if currentWord is undefined
-  const { comments, loading, error, addComment, deleteComment, refetch } = useComments(currentWord?.id);
+  const { comments, loading, error, addComment, deleteComment, refetch } = useComments(currentWord?.id ?? 0);
 
   // Only render loading/error/empty after all hooks
   if (wordsLoading) {
@@ -118,19 +126,19 @@ function App() {
 
   const handlePrevious = () => {
     if (words.length === 0) return; // 단어가 없으면 리턴
-    
+
     if (mode === 'random-study' || mode === 'random-quiz') {
       // 랜덤 모드: 현재 카테고리 내에서 새로운 랜덤 단어 선택
       const randomIndex = Math.floor(Math.random() * words.length);
       console.log(`랜덤 이전: ${category} 카테고리에서 총 ${words.length}개 단어 중 ${randomIndex}번째 선택`);
       setCurrentWordIndex(randomIndex);
     } else {
-      setCurrentWordIndex((prev) => {
-        if (prev === 0) {
-          return words.length - 1;
-        }
-        return Math.max(0, prev - 1);
-      });
+      // 태국어 학습 등 일반 모드에서 첫 단어에서 이전 버튼 누르면 마지막 단어로 이동
+      if (currentWordIndex === 0) {
+        setCurrentWordIndex(words.length - 1);
+      } else {
+        setCurrentWordIndex(currentWordIndex - 1);
+      }
     }
   };
 
@@ -213,7 +221,7 @@ function App() {
               />
               <WordCard word={currentWord} category={category} />
               <CommentSection
-                wordId={currentWord.id}
+                wordId={currentWord.id ?? 0}
                 word={currentWord}
                 comments={comments}
                 loading={loading}

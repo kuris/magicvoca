@@ -313,7 +313,8 @@ export function useWords(category?: string) {
         }));
 
         console.log(`Background loading completed: ${allWords.length} additional words loaded`);
-        setAllWordsData(allWords);
+        setWords(prevWords => [...prevWords, ...allWords]);
+        setAllWordsData([]);
 
       } catch (err) {
         console.error('Error loading remaining words:', err);
