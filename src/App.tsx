@@ -78,6 +78,24 @@ import { useComments } from './hooks/useComments';
 function App() {
   // /admin 경로 라우팅
   if (window.location.pathname === '/admin') {
+    const [key, setKey] = React.useState('');
+    const [passed, setPassed] = React.useState(false);
+    const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (key === '890407') setPassed(true);
+      else alert('잘못된 키입니다');
+    };
+    if (!passed) {
+      return (
+        <div style={{display:'flex',flexDirection:'column',alignItems:'center',marginTop:80}}>
+          <div style={{fontWeight:'bold',color:'#2563eb',marginBottom:24}}>관리자 페이지 접근키를 입력하세요</div>
+          <form onSubmit={handleSubmit} style={{display:'flex',gap:8}}>
+            <input type="password" value={key} onChange={e=>setKey(e.target.value)} placeholder="Access Key" style={{padding:'8px',fontSize:'16px',borderRadius:4,border:'1px solid #e5e7eb'}} />
+            <button type="submit" style={{padding:'8px 16px',fontSize:'16px',borderRadius:4,background:'#2563eb',color:'#fff',border:'none'}}>확인</button>
+          </form>
+        </div>
+      );
+    }
     return <>
       <div style={{textAlign:'center',margin:'32px',fontWeight:'bold',color:'#2563eb'}}>관리자 페이지입니다</div>
       <AdminWordPage />
