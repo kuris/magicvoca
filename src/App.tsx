@@ -80,9 +80,10 @@ function App() {
   if (window.location.pathname === '/admin') {
     const [key, setKey] = React.useState('');
     const [passed, setPassed] = React.useState(false);
+  const adminKey = import.meta.env.VITE_ADMINKEY || '';
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
-      if (key === '890407') setPassed(true);
+      if (key === adminKey) setPassed(true);
       else alert('잘못된 키입니다');
     };
     if (!passed) {
