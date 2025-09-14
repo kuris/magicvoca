@@ -1,5 +1,6 @@
 import { Analytics } from "@vercel/analytics/react";
 import React, { useState } from 'react';
+import AdminWordPage from './pages/AdminWordPage';
 import { Word } from './types';
 function TodayWordsModal({ words, onClose }: { words: Word[]; onClose: () => void }) {
   // txt 다운로드 함수
@@ -75,6 +76,13 @@ import { useWords } from './hooks/useWords';
 import { useComments } from './hooks/useComments';
 
 function App() {
+  // /admin 경로 라우팅
+  if (window.location.pathname === '/admin') {
+    return <>
+      <div style={{textAlign:'center',margin:'32px',fontWeight:'bold',color:'#2563eb'}}>관리자 페이지입니다</div>
+      <AdminWordPage />
+    </>;
+  }
   // Supabase DB 연결 테스트
   React.useEffect(() => {
     async function testSupabaseConnection() {
