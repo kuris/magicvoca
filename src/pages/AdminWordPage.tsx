@@ -5,7 +5,11 @@ interface Word {
   id: number;
   english: string;
   korean: string;
-  // 필요한 추가 필드
+  is_toeic?: boolean;
+  is_toefl?: boolean;
+  is_suneung?: boolean;
+  is_gongmuwon?: boolean;
+  is_gtelp?: boolean;
 }
 
 export default function AdminWordPage() {
@@ -18,7 +22,21 @@ export default function AdminWordPage() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('');
   const [category, setCategory] = useState<'english' | 'korean'>('english');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(['TOEIC', 'TOEFL', '수능', '공무원', 'GTELP']);
 
+  const categoryList = [
+    { key: 'TOEIC', label: 'TOEIC' },
+    { key: 'TOEFL', label: 'TOEFL' },
+    { key: '수능', label: '수능' },
+    { key: '공무원', label: '공무원' },
+    { key: 'GTELP', label: 'GTELP' },
+  ];
+
+  const handleCategoryCheckbox = (key: string) => {
+    setSelectedCategories(prev =>
+      prev.includes(key) ? prev.filter(c => c !== key) : [...prev, key]
+    );
+  };
   useEffect(() => {
     // 모든 단어 불러오기
     supabase
@@ -67,37 +85,77 @@ export default function AdminWordPage() {
   // 검색 버튼 또는 엔터키로 필터 적용
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (category === 'english' && search.trim()) {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('words')
-        .select('*')
-        .ilike('english', `%${search.trim()}%`);
-      if (error) setError(error.message);
-      else setWords(data || []);
-      setFilter(search);
-      setLoading(false);
-    } else {
-      setFilter(search);
+    setLoading(true);
+    let query = supabase.from('words').select('*');
+    // 카테고리별 조건 추가
+    if (selectedCategories.length > 0) {
+      // 여러 카테고리 OR 조건
+      const orConditions = selectedCategories.map(cat => {
+        if (cat === 'TOEIC') return 'is_toeic.eq.true';
+        if (cat === 'TOEFL') return 'is_toefl.eq.true';
+        if (cat === '수능') return 'is_suneung.eq.true';
+        if (cat === '공무원') return 'is_gongmuwon.eq.true';
+        if (cat === 'GTELP') return 'is_gtelp.eq.true';
+        return '';
+      }).filter(Boolean).join(',');
+      if (orConditions) {
+        query = query.or(orConditions);
+      }
     }
+    // 검색어가 있으면 추가 조건
+    if (search.trim()) {
+      if (category === 'english') {
+        query = query.ilike('english', `%${search.trim()}%`);
+      } else {
+        query = query.ilike('korean', `%${search.trim()}%`);
+      }
+    }
+    const { data, error } = await query;
+    if (error) setError(error.message);
+    else setWords(data || []);
+    setFilter(search);
+    setLoading(false);
   };
 
-  const filteredWords = filter
-    ? words.filter(word => {
-        const searchValue = filter.trim().toLowerCase();
-        if (category === 'english') {
-          const english = (word.english || '').toString().trim().toLowerCase();
-          return english.includes(searchValue);
-        } else {
-          const korean = (word.korean || '').toString().trim().toLowerCase();
-          return korean.includes(searchValue);
-        }
-      })
-    : words;
+  // 카테고리 필터링 (단어 객체에 각 카테고리별 boolean 필드가 있다고 가정)
+  const filteredWords = words.filter(word => {
+    // 각 단어에 is_toeic, is_toefl, is_suneung, is_gongmuwon, is_gtelp 필드가 있다고 가정
+    const categoryMap: Record<string, boolean> = {
+      TOEIC: !!word.is_toeic,
+      TOEFL: !!word.is_toefl,
+      수능: !!word.is_suneung,
+      공무원: !!word.is_gongmuwon,
+      GTELP: !!word.is_gtelp,
+    };
+    // 선택된 카테고리 중 하나라도 true면 표시
+    return selectedCategories.some(cat => categoryMap[cat]);
+  }).filter(word => {
+    if (!filter) return true;
+    const searchValue = filter.trim().toLowerCase();
+    if (category === 'english') {
+      const english = (word.english || '').toString().trim().toLowerCase();
+      return english.includes(searchValue);
+    } else {
+      const korean = (word.korean || '').toString().trim().toLowerCase();
+      return korean.includes(searchValue);
+    }
+  });
 
   return (
     <div style={{ maxWidth: 600, margin: '40px auto', padding: 24 }}>
       <h2>잘못된 단어/뜻 관리</h2>
+      <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+        {categoryList.map(cat => (
+          <label key={cat.key} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <input
+              type="checkbox"
+              checked={selectedCategories.includes(cat.key)}
+              onChange={() => handleCategoryCheckbox(cat.key)}
+            />
+            {cat.label}
+          </label>
+        ))}
+      </div>
       <form onSubmit={handleSearch} style={{ display: 'flex', gap: 8, margin: '16px 0' }}>
         <select
           value={category}

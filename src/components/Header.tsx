@@ -107,6 +107,14 @@ export const Header: React.FC<HeaderProps> = ({ category, setCategory }) => {
         >
           공유하기
         </button>
+        <button
+          onClick={()=>window.location.href='/question'}
+          className="px-3 py-1 rounded-full bg-white text-blue-600 font-bold shadow hover:bg-blue-100 text-sm"
+          title="문의하기"
+          style={{marginLeft:'4px'}}
+        >
+          문의하기
+        </button>
       </div>
       <div className="flex flex-col items-center w-full mb-2">
         <span className="text-white font-semibold mb-1">🌐 카테고리 선택</span>

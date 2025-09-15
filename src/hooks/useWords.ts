@@ -313,7 +313,11 @@ export function useWords(category?: string) {
         }));
 
         console.log(`Background loading completed: ${allWords.length} additional words loaded`);
-        setWords(prevWords => [...prevWords, ...allWords]);
+        setWords(prevWords => {
+          const merged = [...prevWords, ...allWords];
+          const deduped = Array.from(new Map(merged.map(w => [w.id, w])).values());
+          return deduped;
+        });
         setAllWordsData([]);
 
       } catch (err) {

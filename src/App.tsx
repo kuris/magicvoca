@@ -1,7 +1,79 @@
 import { Analytics } from "@vercel/analytics/react";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminWordPage from './pages/AdminWordPage';
 import { Word } from './types';
+import { supabase } from './lib/supabase';
+
+// 익명 문의사항 게시판 컴포넌트
+export function QuestionBoard() {
+  const [content, setContent] = useState('');
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const fetchQuestions = async () => {
+    setLoading(true);
+    setError('');
+    const { data, error } = await supabase
+      .from('questions')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) setError('문의 목록을 불러올 수 없습니다.');
+    else setQuestions(data || []);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchQuestions();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!content.trim()) return;
+    setLoading(true);
+    const { error } = await supabase
+      .from('questions')
+      .insert([{ content }]);
+    if (error) setError('등록에 실패했습니다.');
+    else {
+      setContent('');
+      fetchQuestions();
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div style={{maxWidth:400,margin:'32px auto',padding:16,background:'#f9fafb',borderRadius:8,boxShadow:'0 2px 8px #eee'}}>
+      <h3 style={{marginBottom:12,fontWeight:'bold',color:'#2563eb'}}>익명 문의사항 게시판</h3>
+      <form onSubmit={handleSubmit} style={{display:'flex',gap:8,marginBottom:12}}>
+        <input
+          type="text"
+          value={content}
+          onChange={e => setContent(e.target.value)}
+          placeholder="문의 내용을 입력하세요"
+          style={{flex:1,padding:8,borderRadius:4,border:'1px solid #e5e7eb'}}
+          disabled={loading}
+        />
+        <button type="submit" style={{padding:'8px 16px',borderRadius:4,background:'#2563eb',color:'#fff',border:'none'}} disabled={loading}>등록</button>
+      </form>
+      {error && <div style={{color:'red',marginBottom:8}}>{error}</div>}
+      <div style={{maxHeight:180,overflowY:'auto',background:'#fff',borderRadius:4,padding:8,border:'1px solid #e5e7eb'}}>
+        {loading ? <div>로딩 중...</div> : (
+          questions.length === 0 ? <div style={{color:'#888'}}>아직 문의가 없습니다.</div> : (
+            <ul style={{listStyle:'none',padding:0,margin:0}}>
+              {questions.map(q => (
+                <li key={q.id} style={{borderBottom:'1px solid #f3f4f6',padding:'8px 0'}}>
+                  <div style={{fontSize:15}}>{q.content}</div>
+                  <div style={{fontSize:11,color:'#aaa'}}>{new Date(q.created_at).toLocaleString()}</div>
+                </li>
+              ))}
+            </ul>
+          )
+        )}
+      </div>
+    </div>
+  );
+}
 function TodayWordsModal({ words, onClose }: { words: Word[]; onClose: () => void }) {
   // txt 다운로드 함수
   const handleDownloadTxt = () => {
@@ -286,7 +358,7 @@ function App() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
         <div className="container mx-auto px-4 pt-2 pb-1 max-w-4xl">
           <Header category={tab} setCategory={setTab} />
           {/* 모드 버튼 */}

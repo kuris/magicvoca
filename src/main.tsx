@@ -1,6 +1,8 @@
 import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import QuestionPage from './pages/QuestionPage';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
 import { injectSpeedInsights } from "@vercel/speed-insights";
 
@@ -16,12 +18,11 @@ injectSpeedInsights();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
-  </StrictMode>
-);
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<App />} />
+        <Route path="/question" element={<QuestionPage />} />
+      </Routes>
+    </BrowserRouter>
   </StrictMode>
 );
