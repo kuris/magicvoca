@@ -23,6 +23,13 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   loading = false,
   refetchComments
 }) => {
+  // **을 bold로 변환하는 간단한 렌더러
+  const renderContent = (content: string) => {
+    return content.split('**').map((part, index) =>
+      index % 2 === 1 ? <strong key={index} className="font-bold text-gray-900">{part}</strong> : part
+    );
+  };
+
   // 단어가 바뀔 때마다 댓글 새로고침
   React.useEffect(() => {
     if (refetchComments) {
@@ -103,7 +110,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                   <Trash2 size={14} />
                 </button>
               </div>
-              <p className="text-gray-700 leading-relaxed mb-2">{comment.content}</p>
+              <p className="text-gray-700 leading-relaxed mb-2">{renderContent(comment.content)}</p>
               <span className="text-xs text-gray-400">
                 {comment.createdAt.toLocaleDateString('ko-KR')} {comment.createdAt.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
               </span>
@@ -187,7 +194,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                   <Trash2 size={14} />
                 </button>
               </div>
-              <p className="text-gray-700 leading-relaxed mb-2">{comment.content}</p>
+              <p className="text-gray-700 leading-relaxed mb-2">{renderContent(comment.content)}</p>
               <span className="text-xs text-gray-400">
                 {comment.createdAt.toLocaleDateString('ko-KR')} {comment.createdAt.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
               </span>

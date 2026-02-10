@@ -56,6 +56,7 @@ export async function generateMemoryTechnique(englishWord: string, koreanMeaning
 - "ephemeral" → "에페메랄, 에페(애페) + 메랄 = 애페하게 메랄메랄 사라지는 일시적인 것"
 
 한국어로 답변하고, 이모지를 1-2개 포함해서 친근하게 작성해주세요.
+답변에 볼드체(**)가 너무 많으면 가독성이 떨어지니, 핵심 단어 1-2개에만 제한적으로 사용해주세요.
 `
           }
         ]
