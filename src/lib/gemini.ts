@@ -1,11 +1,11 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const API_KEY = import.meta.env.VITE_VERTEX_API_KEY;
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 export async function generateMemoryTechnique(englishWord: string, koreanMeaning: string): Promise<string> {
   try {
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
     
     const prompt = `
 영어 단어 "${englishWord}"(뜻: ${koreanMeaning})에 대한 창의적이고 재미있는 연상고리나 기억법을 1-2문장으로 만들어주세요.
