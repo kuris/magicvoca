@@ -5,6 +5,7 @@ import QuestionPage from './pages/QuestionPage';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
 import { injectSpeedInsights } from "@vercel/speed-insights";
+import { Analytics } from "@vercel/analytics/react"
 
 // 오류 발생 시 전체 에러 로그를 콘솔에 출력
 window.addEventListener('error', (event) => {
@@ -24,5 +25,6 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/question" element={<QuestionPage />} />
       </Routes>
     </BrowserRouter>
+    <Analytics />
   </StrictMode>
 );
