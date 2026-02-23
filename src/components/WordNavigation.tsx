@@ -17,7 +17,7 @@ export const WordNavigation: React.FC<WordNavigationProps> = ({
   // onRandom 제거
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-2 -mt-12">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-2">
       <div className="flex items-center gap-2 text-lg font-semibold text-gray-700">
         <BookOpen className="text-blue-500" size={24} />
         <span>{currentIndex + 1}</span>
