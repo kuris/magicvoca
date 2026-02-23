@@ -391,8 +391,9 @@ function App() {
           </div>
 
           {/* 쿠팡 배너 */}
-          <div className="flex justify-center mb-2 w-full">
-            <iframe src="https://coupa.ng/clHazx" width="100%" height="75" frameBorder="0" scrolling="no" referrerPolicy="unsafe-url" /* browsingtopics */></iframe>
+          <div className="flex justify-center gap-4 mb-2">
+            <div id="coupang-banner-left" style={{ minWidth: 120, minHeight: 60 }}></div>
+            <div id="coupang-banner-right" style={{ minWidth: 120, minHeight: 60 }}></div>
           </div>
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
