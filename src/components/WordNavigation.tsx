@@ -27,7 +27,7 @@ export const WordNavigation: React.FC<WordNavigationProps> = ({
       <div className="flex items-center gap-3 w-full justify-center">
         {/* 쿠팡 이미지 배너 (모바일/데스크탑 모두 노출) */}
         <a
-          href="https://link.coupang.com/a/cPIks9"
+          href="https://coupa.ng/clHazx"
           target="_blank"
           rel="noopener noreferrer"
           referrerPolicy="unsafe-url"
@@ -50,7 +50,7 @@ export const WordNavigation: React.FC<WordNavigationProps> = ({
           <ChevronRight size={20} />
         </button>
         <a
-          href="https://link.coupang.com/a/cPIks9"
+          href="https://coupa.ng/clHazx"
           target="_blank"
           rel="noopener noreferrer"
           referrerPolicy="unsafe-url"
