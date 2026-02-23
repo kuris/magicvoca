@@ -25,16 +25,7 @@ export const WordNavigation: React.FC<WordNavigationProps> = ({
         <span>{totalWords}</span>
       </div>
       <div className="flex items-center gap-3 w-full justify-center">
-        {/* 쿠팡 이미지 배너 (모바일/데스크탑 모두 노출) */}
-        <a
-          href="https://coupa.ng/clHazx"
-          target="_blank"
-          rel="noopener noreferrer"
-          referrerPolicy="unsafe-url"
-          style={{ minWidth: 120, minHeight: 60 }}
-        >
-          <img src="https://ads-partners.coupang.com/banners/919460?subId=&traceId=V0-301-f5c692db558def48-I919460&w=120&h=60" alt="쿠팡배너" style={{ width: 120, height: 60 }} />
-        </a>
+
         <button
           onClick={onPrevious}
           className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 text-gray-700 hover:text-blue-600 border border-gray-200"
@@ -49,16 +40,7 @@ export const WordNavigation: React.FC<WordNavigationProps> = ({
           <span className="hidden sm:inline">다음</span>
           <ChevronRight size={20} />
         </button>
-        <a
-          href="https://coupa.ng/clHazx"
-          target="_blank"
-          rel="noopener noreferrer"
-          referrerPolicy="unsafe-url"
-          className="sm:hidden"
-          style={{ minWidth: 120, minHeight: 60 }}
-        >
-          <img src="https://ads-partners.coupang.com/banners/919460?subId=&traceId=V0-301-f5c692db558def48-I919460&w=120&h=60" alt="쿠팡배너" style={{ width: 120, height: 60 }} />
-        </a>
+
       </div>
     </div>
   );
