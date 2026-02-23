@@ -43,28 +43,28 @@ export function QuestionBoard() {
   };
 
   return (
-    <div style={{maxWidth:400,margin:'32px auto',padding:16,background:'#f9fafb',borderRadius:8,boxShadow:'0 2px 8px #eee'}}>
-      <h3 style={{marginBottom:12,fontWeight:'bold',color:'#2563eb'}}>익명 문의사항 게시판</h3>
-      <form onSubmit={handleSubmit} style={{display:'flex',gap:8,marginBottom:12}}>
+    <div style={{ maxWidth: 400, margin: '32px auto', padding: 16, background: '#f9fafb', borderRadius: 8, boxShadow: '0 2px 8px #eee' }}>
+      <h3 style={{ marginBottom: 12, fontWeight: 'bold', color: '#2563eb' }}>익명 문의사항 게시판</h3>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
         <input
           type="text"
           value={content}
           onChange={e => setContent(e.target.value)}
           placeholder="문의 내용을 입력하세요"
-          style={{flex:1,padding:8,borderRadius:4,border:'1px solid #e5e7eb'}}
+          style={{ flex: 1, padding: 8, borderRadius: 4, border: '1px solid #e5e7eb' }}
           disabled={loading}
         />
-        <button type="submit" style={{padding:'8px 16px',borderRadius:4,background:'#2563eb',color:'#fff',border:'none'}} disabled={loading}>등록</button>
+        <button type="submit" style={{ padding: '8px 16px', borderRadius: 4, background: '#2563eb', color: '#fff', border: 'none' }} disabled={loading}>등록</button>
       </form>
-      {error && <div style={{color:'red',marginBottom:8}}>{error}</div>}
-      <div style={{maxHeight:180,overflowY:'auto',background:'#fff',borderRadius:4,padding:8,border:'1px solid #e5e7eb'}}>
+      {error && <div style={{ color: 'red', marginBottom: 8 }}>{error}</div>}
+      <div style={{ maxHeight: 180, overflowY: 'auto', background: '#fff', borderRadius: 4, padding: 8, border: '1px solid #e5e7eb' }}>
         {loading ? <div>로딩 중...</div> : (
-          questions.length === 0 ? <div style={{color:'#888'}}>아직 문의가 없습니다.</div> : (
-            <ul style={{listStyle:'none',padding:0,margin:0}}>
+          questions.length === 0 ? <div style={{ color: '#888' }}>아직 문의가 없습니다.</div> : (
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
               {questions.map(q => (
-                <li key={q.id} style={{borderBottom:'1px solid #f3f4f6',padding:'8px 0'}}>
-                  <div style={{fontSize:15}}>{q.content}</div>
-                  <div style={{fontSize:11,color:'#aaa'}}>{new Date(q.created_at).toLocaleString()}</div>
+                <li key={q.id} style={{ borderBottom: '1px solid #f3f4f6', padding: '8px 0' }}>
+                  <div style={{ fontSize: 15 }}>{q.content}</div>
+                  <div style={{ fontSize: 11, color: '#aaa' }}>{new Date(q.created_at).toLocaleString()}</div>
                 </li>
               ))}
             </ul>
@@ -83,7 +83,7 @@ function TodayWordsModal({ words, onClose }: { words: Word[]; onClose: () => voi
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `today_words_${new Date().toISOString().slice(0,10)}.txt`;
+    a.download = `today_words_${new Date().toISOString().slice(0, 10)}.txt`;
     document.body.appendChild(a);
     a.click();
     setTimeout(() => {
@@ -113,26 +113,26 @@ function TodayWordsModal({ words, onClose }: { words: Word[]; onClose: () => voi
         overflowY: "auto",
         position: "relative"
       }}>
-        <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16}}>
-          <h2 style={{margin:0}}>오늘 학습한 단어</h2>
-          <button onClick={handleDownloadTxt} style={{padding:"6px 12px", borderRadius:4, background:"#10b981", color:"white", border:"none", fontSize:13}}>TXT로 내려받기</button>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <h2 style={{ margin: 0 }}>오늘 학습한 단어</h2>
+          <button onClick={handleDownloadTxt} style={{ padding: "6px 12px", borderRadius: 4, background: "#10b981", color: "white", border: "none", fontSize: 13 }}>TXT로 내려받기</button>
         </div>
         {words.length === 0 ? (
           <div>오늘 학습한 단어가 없습니다.</div>
         ) : (
-          <table style={{width:"100%", marginBottom:16, borderCollapse:"collapse"}}>
+          <table style={{ width: "100%", marginBottom: 16, borderCollapse: "collapse" }}>
             <tbody>
               {words.map((w: Word) => (
                 <tr key={w.id}>
-                  <td style={{padding:"8px", borderBottom:"1px solid #f3f4f6"}}>{w.english ?? ""}</td>
-                  <td style={{padding:"8px", borderBottom:"1px solid #f3f4f6"}}>{w.korean ?? ""}</td>
-                  <td style={{padding:"8px", borderBottom:"1px solid #f3f4f6"}}>{w.hanja ?? ""}</td>
+                  <td style={{ padding: "8px", borderBottom: "1px solid #f3f4f6" }}>{w.english ?? ""}</td>
+                  <td style={{ padding: "8px", borderBottom: "1px solid #f3f4f6" }}>{w.korean ?? ""}</td>
+                  <td style={{ padding: "8px", borderBottom: "1px solid #f3f4f6" }}>{w.hanja ?? ""}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
-        <button onClick={onClose} style={{padding:"8px 16px", borderRadius:4, background:"#3182f6", color:"white", border:"none"}}>닫기</button>
+        <button onClick={onClose} style={{ padding: "8px 16px", borderRadius: 4, background: "#3182f6", color: "white", border: "none" }}>닫기</button>
       </div>
     </div>
   );
@@ -152,7 +152,7 @@ function App() {
   if (window.location.pathname === '/admin') {
     const [key, setKey] = React.useState('');
     const [passed, setPassed] = React.useState(false);
-  const adminKey = import.meta.env.VITE_ADMINKEY || '';
+    const adminKey = import.meta.env.VITE_ADMINKEY || '';
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
       if (key === adminKey) setPassed(true);
@@ -160,17 +160,17 @@ function App() {
     };
     if (!passed) {
       return (
-        <div style={{display:'flex',flexDirection:'column',alignItems:'center',marginTop:80}}>
-          <div style={{fontWeight:'bold',color:'#2563eb',marginBottom:24}}>관리자 페이지 접근키를 입력하세요</div>
-          <form onSubmit={handleSubmit} style={{display:'flex',gap:8}}>
-            <input type="password" value={key} onChange={e=>setKey(e.target.value)} placeholder="Access Key" style={{padding:'8px',fontSize:'16px',borderRadius:4,border:'1px solid #e5e7eb'}} />
-            <button type="submit" style={{padding:'8px 16px',fontSize:'16px',borderRadius:4,background:'#2563eb',color:'#fff',border:'none'}}>확인</button>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 80 }}>
+          <div style={{ fontWeight: 'bold', color: '#2563eb', marginBottom: 24 }}>관리자 페이지 접근키를 입력하세요</div>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 8 }}>
+            <input type="password" value={key} onChange={e => setKey(e.target.value)} placeholder="Access Key" style={{ padding: '8px', fontSize: '16px', borderRadius: 4, border: '1px solid #e5e7eb' }} />
+            <button type="submit" style={{ padding: '8px 16px', fontSize: '16px', borderRadius: 4, background: '#2563eb', color: '#fff', border: 'none' }}>확인</button>
           </form>
         </div>
       );
     }
     return <>
-      <div style={{textAlign:'center',margin:'32px',fontWeight:'bold',color:'#2563eb'}}>관리자 페이지입니다</div>
+      <div style={{ textAlign: 'center', margin: '32px', fontWeight: 'bold', color: '#2563eb' }}>관리자 페이지입니다</div>
       <AdminWordPage />
     </>;
   }
@@ -248,14 +248,14 @@ function App() {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   // 오늘 모드일 때는 모든 카테고리 단어를 가져와야 함
   const { words, loading: wordsLoading, error: wordsError, totalWords } = useWords(mode === 'today' ? undefined : category);
-  
+
   // 오늘 모드일 때는 todayWords에 해당하는 단어만 보여줌
   const todayWordList = mode === 'today' ? words.filter(w => todayWords.includes(w.id ?? -1)) : words;
   const safeCurrentIndex = todayWordList.length > 0 ? Math.min(currentWordIndex, todayWordList.length - 1) : 0;
   const currentWord = todayWordList[safeCurrentIndex];
   // 단어를 볼 때마다 오늘 단어로 기록
 
-  
+
   // 인덱스가 범위를 벗어났을 때 보정
   React.useEffect(() => {
     if (words.length > 0 && currentWordIndex >= words.length) {
@@ -358,7 +358,7 @@ function App() {
 
   return (
     <>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
         <div className="container mx-auto px-4 pt-2 pb-1 max-w-4xl">
           <Header category={tab} setCategory={setTab} />
           {/* 모드 버튼 */}
@@ -389,11 +389,10 @@ function App() {
               onClick={() => setShowTodayModal(true)}
             >오늘학습단어</button>
           </div>
-          
+
           {/* 쿠팡 배너 */}
-          <div className="flex justify-center gap-4 mb-2">
-            <div id="coupang-banner-left" style={{ minWidth: 120, minHeight: 60 }}></div>
-            <div id="coupang-banner-right" style={{ minWidth: 120, minHeight: 60 }}></div>
+          <div className="flex justify-center mb-2 w-full">
+            <iframe src="https://coupa.ng/clHazx" width="100%" height="75" frameBorder="0" scrolling="no" referrerPolicy="unsafe-url" /* browsingtopics */></iframe>
           </div>
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -401,7 +400,7 @@ function App() {
               <p className="text-sm">{error}</p>
             </div>
           )}
-      {(mode === 'study' || mode === 'random-study' || mode === 'today') ? (
+          {(mode === 'study' || mode === 'random-study' || mode === 'today') ? (
             <>
               <WordNavigation
                 currentIndex={currentWordIndex}
@@ -445,7 +444,7 @@ function App() {
           </div>
         </div>
       </div>
-  {/* 안내문구는 위에서 한 번만 표시됨 */}
+      {/* 안내문구는 위에서 한 번만 표시됨 */}
       <Analytics />
       {showTodayModal && (
         <TodayWordsModal words={words.filter(w => todayWords.includes(w.id ?? -1))} onClose={() => setShowTodayModal(false)} />
